@@ -2,8 +2,11 @@ import axios from 'axios';
 import Chart from 'react-apexcharts';
 import {BASE_URL} from 'utils/requests';
 import {SaleSum} from 'types/sale';
+import { useEffect, useState } from 'react';
 
 const DonutChart = () => {
+
+    const [chartData, setChartData] = useState<ChartData>({labels:[], series:[]});
 
     type ChartData ={
         labels: string[];
@@ -11,22 +14,26 @@ const DonutChart = () => {
     }
     
     // FORMA ERRADA
-    let chartData : ChartData = {labels:[], series:[]}
+    //let chartData : ChartData = {labels:[], series:[]}
     //const mockData = {
     //    series: [477138, 499928, 444867, 220426, 473088],
     //    labels: ['Anakin', 'Barry Allen', 'Kal-El', 'Logan', 'Padmé']
     //}
     
-     // FORMA ERRADA
-    axios.get(`${BASE_URL}/sales/sum-by-seller`)
+    //Se não usar useEffect, teremos um loopinfinito, pois quando o componente passar pelo axios ele tentará
+    // renderizar novamente pois quando o useState é atualizado, ele renderiza novamente.
+    useEffect(() => {
+        axios.get(`${BASE_URL}/sales/sum-by-seller`)
          .then((response) => {
                const data = response.data as SaleSum[];
                const myLabels = data.map(x => x.sellerName);
                const mySeries = data.map(x => x.sum);
 
-               chartData = {labels: myLabels, series: mySeries};
-               console.log(chartData);
+               setChartData({labels: myLabels, series: mySeries});
+               //console.log(chartData);
          });
+    }, []);
+  
 
     const options = {
         legend: {
